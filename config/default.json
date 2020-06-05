@@ -1,0 +1,3 @@
+{
+  "mongoURI": "mongodb+srv://jgpeco:code3344@devconnector-cluster-l2acr.mongodb.net/devConnector?retryWrites=true&w=majority"
+}
