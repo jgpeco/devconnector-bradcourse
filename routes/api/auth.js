@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const { check, validationResult } = require('express-validator');
@@ -8,7 +9,7 @@ const { check, validationResult } = require('express-validator');
 const User = require('../../models/User');
 
 // @route   GET api/auth
-// @desc    Test Route
+// @desc    Validate user token
 // @access  Public
 router.get('/', auth, async (req, res) => {
   try {
@@ -26,51 +27,34 @@ router.get('/', auth, async (req, res) => {
 router.post(
   '/',
   [
-    //this is the middleware with the express-validator logic
-    check('name', 'Name is required').not().isEmpty(),
     check('email', 'Please include a valid email').isEmail(),
-    check(
-      'password',
-      'Please enter a password with 6 or more characters'
-    ).isLength({
-      min: 6,
-    }),
+    check('password', 'Password is required').exists(),
   ],
   async (req, res) => {
-    //handling erros of the express-validator
+    //handling errors of the express-validator
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password } = req.body;
+    const { email, password } = req.body;
 
     try {
       //see if the user exists
       let user = await User.findOne({ email }); //searching the email in db
-      if (user) {
+      if (!user) {
         return res
           .status(400)
-          .json({ erros: [{ msg: 'User already exists' }] });
+          .json({ erros: [{ msg: 'Invalid Credentials' }] });
       }
-      // get users gravatar
-      const avatar = gravatar.url(email, {
-        s: '200', //size
-        r: 'pg', //rate - no pornographic
-        d: 'mm', //default: user icon
-      });
-      //creating a new user
-      user = new User({
-        name,
-        email,
-        avatar,
-        password,
-      });
-      // Encrypt the password
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt); //creates a hash in the user pw
 
-      await user.save();
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) {
+        return res
+          .status(400)
+          .json({ erros: [{ msg: 'Invalid Credentials' }] });
+      }
 
       // Return the jswonwebtoken
       const payload = {
