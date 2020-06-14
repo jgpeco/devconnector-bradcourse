@@ -281,7 +281,7 @@ router.put(
       description,
     } = req.body;
 
-    const newExp = {
+    const newEdu = {
       school,
       degree,
       fieldofstudy,
