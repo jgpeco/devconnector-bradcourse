@@ -231,11 +231,97 @@ router.delete('/experience/:exp_id', auth, async (req, res) => {
 
     //get remove index
     const removeIndex = profile.experience
-      .map((item) => item.id) //taken the id of the experience (item creates becauses it is like a collection inside of a collection)
-      .indexOf(req.params.exp_id); //assing that value to the index to match the experience id
+      .map((item) => item.id) //taken the id of the experience and create a new array just with the ids
+      .indexOf(req.params.exp_id); //search for the right id and assign the removeIndex value to the value of this index
 
     if (removeIndex >= 0) {
       profile.experience.splice(removeIndex, 1); //removing it from the array
+
+      await profile.save();
+
+      return res.json(profile);
+    }
+
+    throw {
+      message: 'Error not found',
+    };
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   PUT api/profile/education
+// @desc    Add profile education
+// @access  Private
+router.put(
+  '/education',
+  [
+    auth,
+    [
+      check('school', 'School is required').not().isEmpty(),
+      check('degree', 'Degree is required').not().isEmpty(),
+      check('fieldofstudy', 'Field of Study is required').not().isEmpty(),
+      check('from', 'From Date is required').not().isEmpty(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      school,
+      degree,
+      fieldofstudy,
+      from,
+      to,
+      current,
+      description,
+    } = req.body;
+
+    const newExp = {
+      school,
+      degree,
+      fieldofstudy,
+      from,
+      to,
+      current,
+      description,
+    };
+
+    try {
+      const profile = await Profile.findOne({
+        user: req.user.id,
+      });
+
+      profile.education.unshift(newEdu);
+
+      await profile.save();
+
+      res.json(profile);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
+
+// @route   DELETE api/profile/education/:exp_id
+// @desc    Remove education from profile
+// @access  Private
+router.delete('/education/:edu_id', auth, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id });
+
+    //get remove index
+    const removeIndex = profile.education
+      .map((item) => item.id) //taken the id of the education and create a new array just with the ids
+      .indexOf(req.params.edu_id); //search for the right id and assign the removeIndex value to the value of this index
+
+    if (removeIndex >= 0) {
+      profile.education.splice(removeIndex, 1); //removing it from the array
 
       await profile.save();
 
