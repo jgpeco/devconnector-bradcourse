@@ -85,7 +85,7 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ msg: 'Post not found!' }); //check if the post exists
     }
 
-    //check if the user is the comments owner
+    //check if the user is the owner of the post
     if (post.user.toString() !== req.user.id) {
       return res.status(401).json({ msg: 'User not authorized' });
     }
@@ -99,6 +99,64 @@ router.delete('/:id', auth, async (req, res) => {
       //check for an invalid post id and return the same error as if it was not a found post
       return res.status(404).json({ msg: 'Post not found!' });
     }
+    res.status(500).send('Server Error');
+  }
+});
+
+//@route    PUT api/posts/like/:id
+//@desc     Like a Post
+//access    Private
+router.put('/like/:id', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    //check if the post has already been liked by this user
+    if (
+      post.likes.filter((like) => like.user.toString() === req.user.id).length >
+      0 //using a filter method to compare the like.user to the user authenticated.
+      //if the legnth of the return is greater than 0, it is already liked by this user
+    ) {
+      return res.status(400).json({ msg: 'Post already like' });
+    }
+
+    post.likes.unshift({ user: req.user.id });
+    await post.save();
+
+    res.json(post.likes);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+//@route    PUT api/posts/unlike/:id
+//@desc     Unlike a Post
+//access    Private
+router.put('/unlike/:id', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    //check if the post has already been liked by this user
+    if (
+      (post.likes.filter(
+        (like) => like.user.toString() === req.user.id
+      ).length = 0) //this time we are checking if the post isn't liked
+    ) {
+      return res.status(400).json({ msg: 'Post has not yet been liked' });
+    }
+
+    //get remove index
+    const removeIndex = post.likes
+      .map((like) => like.user.toString()) //mapping through just the users in the array
+      .indexOf(req.user.id); //getting the index of the correct user
+
+    post.likes.splice(removeIndex, 1); //removing the like from the correct user
+
+    await post.save();
+
+    res.json(post.likes);
+  } catch (err) {
+    console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
