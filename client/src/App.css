@@ -488,6 +488,10 @@ button {
   margin-bottom: 0.5rem;
 }
 
+.post i {
+  margin-right: 0.3rem;
+}
+
 /* Mobile Styles */
 @media (max-width: 700px) {
   .container {
@@ -567,6 +571,7 @@ button {
     margin-bottom: 0.2rem;
   }
 
+  /* Posts */
   .post {
     grid-template-columns: 1fr;
   }
