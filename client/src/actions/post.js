@@ -10,7 +10,6 @@ import {
   ADD_COMMENT,
   REMOVE_COMMENT,
 } from './types';
-import { restart } from 'nodemon';
 
 //Get Posts
 export const getPosts = () => async (dispatch) => {
