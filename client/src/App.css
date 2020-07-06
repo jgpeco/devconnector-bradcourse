@@ -492,6 +492,10 @@ button {
   margin-right: 0.3rem;
 }
 
+#delete-comment {
+  margin: 0;
+}
+
 /* Mobile Styles */
 @media (max-width: 700px) {
   .container {
