@@ -5,11 +5,12 @@ const request = require('request');
 const config = require('config');
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
+//normalize is used to make a proper url, regardless of what the user entered
+// const normalize = request('normalize-url');
 
 const User = require('../../models/User');
 const Profile = require('../../models/Profile');
 const Post = require('../../models/Post');
-const { restart } = require('nodemon');
 
 // @route   GET api/profile/me
 // @desc    Get current user profile
